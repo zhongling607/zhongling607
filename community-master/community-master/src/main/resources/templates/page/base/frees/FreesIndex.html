@@ -1,0 +1,154 @@
+<div class="layuimini-container layuimini-page-anim" >
+    <div class="layuimini-main">
+
+
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+
+
+            </div>
+        </script>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
+
+
+    </div>
+</div>
+
+<style type="text/css">.layui-table-cell{
+    height:auto;
+    overflow:visible;
+    text-overflow:inherit;
+    white-space:normal;
+    word-break: break-all;
+}
+</style>
+
+
+<script>
+    layui.use(['form', 'table','miniPage','element'], function (res, curr, count) {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            miniPage = layui.miniPage;
+
+        // console.log(res)
+        //解决操作栏因为内容过多换行问题
+        $(".layui-table-main tr").each(function (index, val) {
+            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+        });
+
+
+        table.render({
+            elem: '#currentTableId',
+            url: 'frees/queryFreesAll',
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips',
+
+            },
+            ],
+
+
+            cols: [
+
+                [
+                //{type: "checkbox", width: 80},
+                //{field: 'id', width: 80, title: 'ID', sort: true},
+
+                {field: 'freeMan', width: 350, title: '闲置人员'},
+                //{field: 'personNum', width: 120, title: '闲置人员数量',fixed:false},
+                {field: 'equipmentCar', width: 350, title: '闲置车载设备'},
+                //{field: 'carNum', width: 100, title: '闲置车载设备数量',fixed:false},
+                {field: 'equipmentHand', width: 350, title: '闲置手推设备'},
+                //{field: 'handNum', width: 100, title: '闲置手推设备数量',fixed:false},
+                {field: 'carCode', width: 300, title: '闲置车辆车牌'},
+               // {field: 'carFree', width: 150, title: '闲置车辆数量',fixed:false},
+                //{field: 'type', width: 150, title: '设备类型',fixed:false},
+
+
+
+            ]],
+
+           // limits: [10, 15, 20, 25, 50, 100],
+            //limit: 15,
+           // page: true,
+            skin: 'line',
+            id: 'testReload',
+
+
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function(){
+                var type = $('#type');
+
+                //执行重载
+                table.reload('testReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        type:type.val()
+                    }
+                }, 'data');
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            debugger
+            var result = JSON.stringify(data.field);
+            layer.alert(result, {
+                title: '最终的搜索信息'
+            });
+
+            //执行搜索重载
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                }
+                , where: {
+                    searchParams: result
+                }
+            }, 'data');
+
+            return false;
+
+        });
+
+        /**
+         * toolbar事件监听
+         */
+
+
+
+
+        //监听表格复选框选择
+
+
+        /**
+         * 设计渲染form中的信息值
+         */
+
+
+
+
+
+
+    });
+</script>

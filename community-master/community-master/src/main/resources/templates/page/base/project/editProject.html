@@ -1,0 +1,124 @@
+<div class="layuimini-main">
+    <div class="layui-form layuimini-form " lay-filter="updateSubmit">
+        <input type="text" name="contractId"  id="contractId" style="display:none">
+        <input type="text" name="id"  style="display:none">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">项目编号</label>
+            <div class="layui-input-inline">
+                <input type="text"  lay-verify="required" placeholder="请输入项目编号" lay-reqtext="项目编号不能为空" autocomplete="off" class="layui-input" id="c_numbers">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">项目负责人</label>
+            <div class="layui-input-block">
+                <input type="text" name="leader" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">开始时间</label>
+            <div class="layui-input-block">
+                <input type="date" name="startDate" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">道路里程</label>
+            <div class="layui-input-block">
+                <input type="text" name="roadLength" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">测线里程</label>
+            <div class="layui-input-block">
+                <input type="text" name="lineLength" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">预计结束时间</label>
+            <div class="layui-input-block">
+                <input type="date" name="endDate" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">复测周期</label>
+            <div class="layui-input-block">
+                <input type="text" name="period" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">项目状态</label>
+            <div class="layui-input-block">
+                <select name="status" lay-verify="required">
+                    <option value="">项目状态</option>
+                    <option value="完成">完成</option>
+                    <option value="进行中">进行中</option>
+
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">备注</label>
+            <div class="layui-input-block">
+                <input type="text" name="remarks"  class="layui-input">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="updateSubmit">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table', 'tableSelect'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            tableSelect = layui.tableSelect;
+        $ = layui.$;
+        //form.render();
+        tableSelect.render({
+            elem: '#c_numbers',
+            checkedKey: 'id',
+            table: {
+                url: 'contract/queryContractAll',
+                cols: [[
+                    { type: 'radio' },
+                    //{ field: 'id', title: 'ID' },
+                    { field: 'numbers', title: '项目编号' },
+                    { field: 'name', title: '项目名称' }
+                ]]
+            },
+            done: function (elem, data) {
+                $("#contractId").val(data.data[0].id);
+                $("#c_numbers").val(data.data[0].numbers);
+            }
+        })
+
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(updateSubmit)', function (data) {
+            //获取表单中的数据信息
+            var datas=data.field;
+            //向后台发送请求 添加
+            addOrUpdateSubmit($,"project/update",datas);
+
+            return false;
+        });
+
+    });
+</script>

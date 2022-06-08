@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.DutiesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Duties">
+        <id column="id" property="id"/>
+        <result column="numbers" property="numbers"/>
+        <result column="name" property="name"/>
+        <result column="employee" property="employee"/>
+        <result column="year" property="year"/>
+        <result column="month" property="month"/>
+        <result column="days" property="days"/>
+        <result column="leaves" property="leaves"/>
+        <result column="vacations" property="vacations"/>
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, numbers,name,employee,year,month,days
+        </sql>
+
+    <!--查询人员出勤信息-->
+    <select id="queryDutiesAll" parameterType="string" resultType="com.yx.model.Duties">
+        select DISTINCT ad.*
+        from
+        (
+        SELECT  p.contract_id,e.employee,
+        p.employee_id,substr(p.date,1,4) as year,substr(p.date,6,2) as month,
+        c.numbers,c.name,
+        sum(CASE p.states WHEN '出差' THEN counts ELSE 0 END) AS 'days',
+        sum(CASE p.states WHEN '请假' THEN counts ELSE 0 END) AS 'leaves',
+        sum(CASE p.states WHEN '休假' THEN counts ELSE 0 END) AS 'vacations'
+        FROM person p
+        left join employee e on p.employee_id=e.id
+        left join contract c on p.contract_id=c.id
+        GROUP BY p.employee_id,year,month
+
+        ) ad
+        left join manager m on ad.contract_id=m.contract_id
+        <where>
+            <if test="userId!=null and userId!=''">
+                and m.user_id = #{userId}
+            </if>
+            <if test="numbers!=null and numbers!=''">
+                and ad.numbers like '%${numbers}%'
+            </if>
+        </where>
+        ORDER BY ad.year desc,ad.month desc
+
+
+    </select>
+
+    <select id="queryDutiesById" resultType="com.yx.model.Duties" parameterType="Integer">
+        select * from duties where id = #{dutiesId}
+    </select>
+</mapper>

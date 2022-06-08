@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.RolesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Roles">
+        <id column="id" property="id"/>
+        <result column="roles_name" property="rolesName"/>
+        <result column="roles_type" property="rolesType"/>
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, roles_name,roles_type
+        </sql>
+
+    <!--查询角色-->
+    <select id="queryRolesAll" parameterType="string" resultType="com.yx.model.Roles">
+        select  id, roles_name,roles_type from roles
+        <where>
+            <if test="rolesName!=null and rolesName!=''">
+                and roles_name like '%${rolesName}%'
+            </if>
+        </where>
+    </select>
+
+    <select id="queryRolesById" resultType="com.yx.model.Roles" parameterType="Integer">
+        select * from roles where id = #{rolesId}
+    </select>
+</mapper>

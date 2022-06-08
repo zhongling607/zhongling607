@@ -1,0 +1,102 @@
+<div class="layuimini-main">
+    <div class="layui-form layuimini-form">
+
+        <input type="text" name="contractId"  id="contractId" style="display:none">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">项目编号</label>
+            <div class="layui-input-inline">
+                <input type="text" lay-verify="required" placeholder="请输入项目编号" lay-reqtext="项目编号不能为空" placeholder="请输入项目编号" value="" autocomplete="off" class="layui-input" id="p_numbers">
+            </div>
+        </div>
+        <input type="text" name="userId"  id="userId" style="display:none">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">用户名</label>
+            <div class="layui-input-inline">
+                <input type="text"  placeholder="请输入项目编号" lay-reqtext="项目编号不能为空" placeholder="请输入项目编号" value="" autocomplete="off" class="layui-input" id="r_user">
+            </div>
+        </div>
+
+
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table', 'tableSelect'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            tableSelect = layui.tableSelect;
+        $ = layui.$;
+
+
+        //form.render();
+        tableSelect.render({
+            elem: '#p_numbers',
+            checkedKey: 'id',
+            searchKey: 'numbers',
+            searchPlaceholder: '项目编号',
+            table: {
+                url: 'contract/queryContractAll',
+                cols: [[
+                    { type: 'radio' },
+                    //{ field: 'signDate', title: '签订日期' ,sort:true },
+                    { field: 'numbers', title: '项目编号' },
+                    { field: 'name', title: '项目名称' }
+                ]]
+            },
+            done: function (elem, data) {
+
+                $("#contractId").val(data.data[0].id);
+                $("#p_numbers").val(data.data[0].numbers);
+            }
+        })
+
+        tableSelect.render({
+            elem: '#r_user',
+            checkedKey: 'id',
+            searchKey: 'username',
+            searchPlaceholder: '用户名',
+            table: {
+                url: 'userinfo/queryUserInfoAll',
+                cols: [[
+                    { type: 'radio' },
+                    //{ field: 'id', title: 'ID' },
+                    //{ field: 'signDate', title: '签订日期' ,sort:true },
+                    { field: 'username', title: '用户名' },
+                    { field: 'realName', title: '真实姓名' }
+                ]]
+            },
+            done: function (elem, data) {
+
+                $("#userId").val(data.data[0].id);
+                $("#r_user").val(data.data[0].username);
+            }
+        })
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            //获取表单中的数据信息
+            var datas=data.field;
+            addOrUpdateSubmit($,"manager/add",datas);
+
+
+            return false;
+        });
+
+    });
+
+</script>

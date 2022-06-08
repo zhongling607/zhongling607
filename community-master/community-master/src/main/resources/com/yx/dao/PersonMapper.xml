@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.PersonMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Person">
+        <id column="id" property="id"/>
+        <result column="contract_id" property="contractId"/>
+        <result column="employee_id" property="employeeId"/>
+        <result column="date" property="date"/>
+        <result column="states" property="states"/>
+        <result column="remarks" property="remarks"/>
+        <result column="counts" property="counts"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, numbers, name,contractId,employeeId,date,remarks,states,counts
+        </sql>
+
+    <!--查询项目人员-->
+    <select id="queryPersonAll" parameterType="string" resultType="com.yx.model.Person">
+        select a.id,a.contract_id,a.employee_id,a.remarks,a.date,a.states,a.counts,c.numbers,c.name, d.employee,d.position
+        from person a left join contract c on a.contract_id = c.id   left join employee d on a.employee_id=d.id
+        left join manager e on a.contract_id=e.contract_id
+
+        <where>
+            <if test="userId!=null and userId!=''">
+                and user_id = #{userId}
+            </if>
+            <if test="numbers!=null and numbers!=''">
+                and c.numbers like '%${numbers}%'
+            </if>
+        </where>
+        order by a.date desc
+    </select>
+
+    <select id="queryPersonById" resultType="com.yx.model.Person" parameterType="Integer">
+        select * from person where id = #{personId}
+    </select>
+</mapper>

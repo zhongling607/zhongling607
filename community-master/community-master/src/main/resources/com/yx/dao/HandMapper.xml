@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.HandMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Hand">
+        <id column="id" property="id"/>
+        <result column="contract_id" property="contractId"/>
+        <result column="is_report" property="isReport"/>
+        <result column="submit_report" property="submitReport"/>
+        <result column="complete_order" property="completeOrder"/>
+        <result column="hand" property="hand"/>
+        <result column="workload" property="workload"/>
+        <result column="check_file" property="checkFile"/>
+        <result column="is_finish" property="is_finish"/>
+        <result column="finish_date" property="finishDate"/>
+        <result column="remarks" property="remarks"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, contract_id,is_report,submit_report,complete_order,hand,workload,check_file,is_finish,finish_date,remarks
+        </sql>
+
+    <!--查询项目提交资料情况-->
+    <select id="queryHandAll" parameterType="string" resultType="com.yx.model.Hand">
+        select  a.contract_id, a.id,a.contract_id,a.is_report,a.submit_report,a.complete_order,a.hand,a.workload,a.check_file,
+        a.is_finish,p.status,a.finish_date,a.remarks,b.numbers,b.name from hand a left join contract b on
+        a.contract_id=b.id left join manager e on a.contract_id =e.contract_id
+        left join project p on  a.contract_id =p.contract_id
+        <where>
+            <if test="userId!=null and userId!=''">
+                and e.user_id = #{userId}
+            </if>
+            <if test="numbers!=null and numbers!=''">
+                and b.numbers like '%${numbers}%'
+            </if>
+        </where>
+    </select>
+
+    <select id="queryHandById" resultType="com.yx.model.Hand" parameterType="Integer">
+        select * from hand where id = #{handId}
+    </select>
+</mapper>

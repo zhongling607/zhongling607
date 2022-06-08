@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.EquipMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Equip">
+        <id column="id" property="id"/>
+        <result column="contract_id" property="contractId"/>
+        <result column="numbers" property="numbers"/>
+        <result column="name" property="name"/>
+        <result column="car" property="car"/>
+        <result column="hand" property="hand"/>
+        <result column="tunnel" property="tunnel"/>
+        <result column="antenna" property="antenna"/>
+        <result column="computer_sum" property="computerSum"/>
+        <result column="drilling_sum" property="drillingSum"/>
+        <result column="endoscope_sum" property="endoscopeSum"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, contract_id,numbers,name,car,hand,tunnel,antenna,computer_sum,drilling_sum,endoscope_sum
+        </sql>
+
+    <!--查询项目设备汇总表-->
+    <select id="queryEquipAll" parameterType="string" resultType="com.yx.model.Equip">
+        select DISTINCT
+        c.numbers,c.name, t2.contract_id,t2.car,t2.hand ,t2.tunnel,t2.antenna,
+        a1.computer_sum,a1.drilling_sum,a1.endoscope_sum
+        from (select t1.contract_id,
+        sum(case t1.type when '车载' then t1.counts else 0 end) car,
+        sum(case t1.type when '手推' then t1.counts else 0 end) hand,
+        sum(case t1.type when '隧道检测' then t1.counts else 0 end) tunnel,
+        sum(case t1.type when '天线' then t1.counts else 0 end) antenna
+        from
+        (SELECT d.contract_id,eq.names,eq.type,eq.code,d.counts
+        from device d left JOIN equipment eq on d.equipment_id=eq.id) t1
+        GROUP BY t1.contract_id) as 	t2
+        left join contract c on t2.contract_id=c.id
+        left join (	select a.contract_id,sum(a.computer_num) as computer_sum ,
+        sum(drilling_num) as drilling_sum ,sum(endoscope_num) as endoscope_sum
+        from instruments a
+        GROUP BY a.contract_id) a1 on t2.contract_id=a1.contract_id
+        left join  manager m  on t2.contract_id =m.contract_id
+
+        <where>
+            <if test="userId!=null and userId!=''">
+                and m.user_id = #{userId}
+            </if>
+            <if test="numbers!=null and numbers!=''">
+                and c.numbers like '%${numbers}%'
+            </if>
+        </where>
+
+    </select>
+
+    <select id="queryEquipById" resultType="com.yx.model.Equip" parameterType="Integer">
+        select * from Equip where id = #{equipId}
+    </select>
+</mapper>
+

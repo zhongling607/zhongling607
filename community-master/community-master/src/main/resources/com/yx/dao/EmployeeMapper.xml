@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.EmployeeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Employee">
+        <id column="id" property="id"/>
+        <result column="employee" property="employee"/>
+        <result column="department" property="department"/>
+        <result column="position" property="position"/>
+        <result column="remarks" property="remarks"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, employee, department,position,remarks
+        </sql>
+
+    <!--查询公司人员信息表-->
+    <select id="queryEmployeeAll" parameterType="string" resultType="com.yx.model.Employee">
+        select id, employee, department, position,remarks from employee
+        <where>
+            <if test="employee!=null and employee!=''">
+                and employee like '%${employee}%'
+            </if>
+        </where>
+    </select>
+
+    <select id="queryEmployeeById" resultType="com.yx.model.Employee" parameterType="Integer">
+        select * from employee where id = #{employeeId}
+    </select>
+</mapper>

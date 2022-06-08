@@ -1,0 +1,118 @@
+<div class="layuimini-main">
+    <div class="layui-form layuimini-form">
+
+        <input type="text" name="contractId"  id="contractId" style="display:none">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">项目编号</label>
+            <div class="layui-input-inline">
+                <input type="text" lay-verify="required" placeholder="请输入项目编号" lay-reqtext="项目编号不能为空" autocomplete="off" class="layui-input" id="c_numbers">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">电脑型号</label>
+            <div class="layui-input-block">
+                <input type="text" name="computerType" lay-verify="required"  class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">电脑数量</label>
+            <div class="layui-input-block">
+                <input type="text" name="computerNum" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">钻机型号</label>
+            <div class="layui-input-block">
+                <input type="text" name="drillingType" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">钻机数量</label>
+            <div class="layui-input-block">
+                <input type="text" name="drillingNum" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">内窥镜型号</label>
+            <div class="layui-input-block">
+                <input type="text" name="endoscopeType"  class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">内窥镜数量</label>
+            <div class="layui-input-block">
+                <input type="text" name="endoscopeNum"  class="layui-input">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">备注</label>
+            <div class="layui-input-block">
+                <input type="text" name="remarks"  class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table', 'tableSelect'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            tableSelect = layui.tableSelect;
+            $ = layui.$;
+
+        //form.render();
+        tableSelect.render({
+            elem: '#c_numbers',
+            checkedKey: 'id',
+            searchKey: 'numbers',
+            searchPlaceholder: '项目编号',
+            table: {
+                url: 'contract/queryContractAll',
+                cols: [[
+                    { type: 'radio' },
+                    //{ field: 'id', title: 'ID' },
+                    { field: 'numbers', title: '项目编号' },
+                    { field: 'name', title: '项目名称' }
+                ]]
+            },
+            done: function (elem, data) {
+                $("#contractId").val(data.data[0].id);
+                $("#c_numbers").val(data.data[0].numbers);
+            }
+        })
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            //获取表单中的数据信息
+            var datas=data.field;
+            addOrUpdateSubmit($,"instruments/add",datas);
+
+
+            return false;
+        });
+
+    });
+
+</script>

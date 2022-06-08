@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.ExecutingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Executing">
+        <id column="id" property="id"/>
+        <result column="contract_id" property="contractId"/>
+        <result column="numbers" property="numbers"/>
+        <result column="name" property="name"/>
+        <result column="sale" property="sale"/>
+        <result column="customer" property="customer"/>
+        <result column="type" property="type"/>
+        <result column="money" property="money"/>
+        <result column="road_sum" property="roadSum"/>
+        <result column="line_sum" property="lineSum"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="year" property="year"/>
+        <result column="month" property="month"/>
+        <result column="collect_sum" property="collectSum"/>
+        <result column="check_num" property="checkNum"/>
+        <result column="sums" property="sums"/>
+        <result column="drill_num" property="drillNum"/>
+        <result column="empty_num" property="emptyNum"/>
+        <result column="void_num" property="voidNum"/>
+        <result column="loose_num" property="looseNum"/>
+        <result column="leader" property="leader"/>
+        <result column="status" property="status"/>
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, numbers, name,contractId,sale,customer,type,money,road_sum,line_sum,start_date,end_date,
+            year,month,collect_num,check_num,sums,drill_num,empty_num,void_num,loose_num,leader,status
+        </sql>
+
+    <!--查询项目执行统计-->
+    <select id="queryExecutingAll" parameterType="string" resultType="com.yx.model.Executing">
+        select a.contract_id,substr(a.date,1,4) year,substr(a.date,6,2) month,
+        concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' ) AS cj_num,
+        sum( ( a.car_length + a.hand_length ) / b.line_length ) as cjjd,
+        case when sum( ( a.car_length + a.hand_length ) / b.line_length )>1 then '100.00%' else
+        concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' ) end AS collect_sum ,
+        concat( Round( max( a.check_num ) , 2 ), '%' ) AS check_num,
+        concat(Round(( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7
+        +concat( Round( max( a.check_num ) , 2 ), '%' )*0.3),2),'%') as ztsum,
+        ( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+
+        concat( Round( max( a.check_num ) , 2 ), '%' )*0.3) as ztjd,
+        case when ( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+
+        concat( Round( max( a.check_num ) , 2 ), '%' )*0.3)>100 then '100.00%'
+        else concat(Round(( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+
+        concat( Round( max( a.check_num ) , 2 ), '%' )*0.3),2),'%') end as sums,
+        sum(a.drill_num) as drill_num,sum(a.empty_num) as empty_num,sum(a.void_num) as void_num ,sum(a.loose_num) as loose_num,
+        b.road_length as road_sum,b.line_length as line_sum,b.start_date as start_date,b.end_date as end_date,b.leader,b.status,
+        c.numbers,c.name,c.sale,c.customer,c.type,c.money
+        from daily a left join project b on a.contract_id=b.contract_id left join contract c on a.contract_id=c.id
+        inner join  manager m on a.contract_id =m.contract_id
+
+        <where>
+            <if test="userId!=null and userId!=''">
+                and m.user_id = #{userId}
+            </if>
+            <if test="numbers!=null and numbers!=''">
+                and c.numbers like '%${numbers}%'
+            </if>
+        </where>
+        GROUP BY a.contract_id,month
+        ORDER BY year desc,month desc
+
+    </select>
+
+    <select id="queryExecutingById" resultType="com.yx.model.Executing" parameterType="Integer">
+        select * from executing where id = #{executingId}
+    </select>
+</mapper>

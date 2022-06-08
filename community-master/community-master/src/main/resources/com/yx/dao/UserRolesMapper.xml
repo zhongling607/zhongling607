@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.UserRolesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.UserRoles">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="roles_id" property="rolesId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="roles_name" property="rolesName"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, user_id,roles_id,create_time,update_time,roles_name
+        </sql>
+
+    <!--用户角色查询-->
+    <select id="queryUserRolesAll" parameterType="string" resultType="com.yx.model.UserRoles">
+
+        select  a.id,a.user_id,a.roles_id,u.username,a.roles_name
+        from user_roles a
+        left join userinfo u on a.user_id=u.id
+        <where>
+            <if test="username!=null and username!=''">
+                and u.username like '%${username}%'
+            </if>
+        </where>
+    </select>
+
+    <select id="queryUserRolesById" resultType="com.yx.model.UserRoles" parameterType="Integer">
+        select * from userRoles where id = #{userRolesId}
+    </select>
+</mapper>
+

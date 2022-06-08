@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.ProductsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Products">
+        <id column="id" property="id" />
+        <result column="contract_id" property="contractId" />
+        <result column="numbers" property="numbers" />
+        <result column="name" property="name" />
+        <result column="year" property="year" />
+        <result column="month" property="month" />
+        <result column="collect_sum" property="collectSum" />
+        <result column="check_num" property="checkNum" />
+        <result column="leader" property="leader" />
+        <result column="sale" property="sale" />
+        <result column="customer" property="customer" />
+        <result column="ves" property="ves" />
+        <result column="sums" property="sums" />
+        <result column="money" property="money" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,contract_id, numbers, name,year,month,collect_sum,check_num,leader,sale,customer,ves,sums,money
+    </sql>
+    <!--查询项目月度产值汇总数据-->
+    <select id="queryProductsAll" parameterType="string" resultType="com.yx.model.Products">
+        select DISTINCT v.numbers,v.name,v.year,v.month,v.collect_sum,v.check_num,v.leader,v.type,
+        v.sale,v.customer,round(sum(v.sums*v.money) /100,2) as ves,
+        v.sums,v.money,v.month_line,v.total
+        from
+        (
+        select m1.*,t2.total
+        from
+        (
+        select a.contract_id,substr(a.date,1,4) year,substr(a.date,6,2) month,
+        concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' ) AS cj_num,
+        sum( ( a.car_length + a.hand_length ) / b.line_length ) as cjjd,
+        Round(sum(a.car_length + a.hand_length),2) as month_line,
+        case when sum( ( a.car_length + a.hand_length ) / b.line_length )>1 then '100.00%' else concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' ) end AS collect_sum ,
+        concat( Round( max( a.check_num ) , 2 ), '%' ) AS check_num,
+        concat(Round(( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+concat( Round( max( a.check_num ) * 100, 2 ), '%' )*0.3),2),'%') as ztsum,
+        ( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+
+        concat( Round( max( a.check_num ) , 2 ), '%' )*0.3) as ztjd,
+        case when ( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+
+        concat( Round( max( a.check_num ) , 2 ), '%' )*0.3)>100 then '100.00%' else concat(Round(( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+concat( Round( max( a.check_num ) , 2 ), '%' )*0.3),2),'%') end as sums,
+
+        sum(a.drill_num) as drill_num,sum(a.empty_num) as empty_num,sum(a.void_num) as void_num ,sum(a.loose_num) as loose_num,
+        b.road_length as road_sum,b.line_length as line_sum,b.start_date as start_date,b.end_date as end_date,b.leader,b.status,
+        c.numbers,c.name,c.sale,c.customer,c.type,c.money
+        from daily a left join project b on a.contract_id=b.contract_id left join contract c on a.contract_id=c.id
+        GROUP BY a.contract_id,year,month
+        ) m1
+        left join
+        (
+        select a.contract_id,
+        concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' ) AS cj_num,
+        sum( ( a.car_length + a.hand_length ) / b.line_length ) as cjjd,
+        case when sum( ( a.car_length + a.hand_length ) / b.line_length )>1 then '100.00%' else concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' ) end AS collect_sum ,
+        concat( Round( max( a.check_num ) , 2 ), '%' ) AS check_num,
+        concat(Round(( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+concat( Round( max( a.check_num ) * 100, 2 ), '%' )*0.3),2),'%') as ztsum,
+        ( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+
+        concat( Round( max( a.check_num ) , 2 ), '%' )*0.3) as ztjd,
+        case when ( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+
+        concat( Round( max( a.check_num ) , 2 ), '%' )*0.3)>100 then '100.00%' else concat(Round(( concat( Round( sum( ( a.car_length + a.hand_length ) / b.line_length ) * 100, 2 ), '%' )*0.7+concat( Round( max( a.check_num ) , 2 ), '%' )*0.3),2),'%') end as total
+        from daily a left join project b on a.contract_id=b.contract_id
+        GROUP BY a.contract_id
+        ) t2
+        on m1.contract_id=t2.contract_id
+        ) v
+
+    <where>
+        v.numbers is not null
+        <if test="numbers!=null and numbers!=''">
+            and v.numbers like '%${numbers}%'
+        </if>
+    </where>
+    GROUP BY v.numbers,v.name,v.year,v.month
+    ORDER BY v.numbers desc, v.year desc,v.month desc
+</select>
+
+<select id="queryProductsById" resultType="com.yx.model.Products" parameterType="Integer">
+        select * from products where id = #{productsId}
+    </select>
+
+        </mapper>

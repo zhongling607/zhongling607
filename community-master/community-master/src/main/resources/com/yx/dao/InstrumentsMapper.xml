@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.InstrumentsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Instruments">
+        <id column="id" property="id" />
+        <result column="contract_id" property="contractId" />
+        <result column="computer_type" property="computerType" />
+        <result column="computer_num" property="computerNum" />
+        <result column="drilling_type" property="drillingType" />
+        <result column="drilling_num" property="drillingNum" />
+        <result column="endoscope_type" property="endoscopeType" />
+        <result column="endoscope_num" property="endoscopeNum" />
+        <result column="remarks" property="remarks" />
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, contract_id,computer_type, computer_num,drilling_type, drilling_num,endoscope_type, endoscope_num, remarks
+    </sql>
+    <!--查询项目其他设备信息-->
+    <select id="queryInstrumentsAll" parameterType="string" resultType="com.yx.model.Instruments">
+        select a.id,a.contract_id,a.computer_type,a.computer_num,a.drilling_type,a.drilling_num,
+        a.endoscope_type,a.endoscope_num,a.remarks,
+        b.numbers,b.name from instruments a left join contract b
+        on a.contract_id=b.id  left join manager e on a.contract_id=e.contract_id
+
+        <where>
+            <if test="userId!=null and userId!=''">
+                and e.user_id = #{userId}
+            </if>
+
+            <if test="numbers!=null and numbers!=''">
+                and b.numbers like '%${numbers}%'
+            </if>
+        </where>
+    </select>
+
+    <select id="queryInstrumentsById" resultType="com.yx.model.Instruments" parameterType="Integer">
+        select * from instruments where id = #{instrumentsId}
+    </select>
+
+</mapper>
+
+
+
+

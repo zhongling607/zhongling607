@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.ResumesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Resumes">
+        <id column="id" property="id"/>
+        <result column="contract_id" property="contractId"/>
+        <result column="numbers" property="numbers"/>
+        <result column="name" property="name"/>
+        <result column="leader" property="leader"/>
+        <result column="person_sum" property="personSum"/>
+        <result column="employee" property="employee"/>
+        <result column="car" property="car"/>
+        <result column="hand" property="hand"/>
+        <result column="car_code" property="carCode"/>
+        <result column="days" property="days"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="collects" property="collects"/>
+        <result column="checks" property="checks"/>
+        <result column="empty_sum" property="emptySum"/>
+        <result column="void_sum" property="voidSum"/>
+        <result column="loose_sum" property="looseSum"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, contract_id,numbers,name,leader,person_sum,employee,car,hand,car_code,days,
+            end_date,collects,checks,empty_sum,void_sum,loose_sum,status
+        </sql>
+
+    <!--查询系统首页项目汇总表-->
+    <select id="queryResumesAll" parameterType="string" resultType="com.yx.model.Resumes">
+        select DISTINCT x.numbers, x.name,x.leader,x.line_length,x.status,
+        LENGTH(x.employee)-length(replace(x.employee,',',''))+1 as person_sum ,
+        x.person_sum0,x.employee,x.car,x.hand,x.car_code,
+        x.start_date,x.end_date,x.days,x.checks,
+        x.empty_sum,x.void_sum,x.loose_sum,
+        x.cjsum,x.cjs,
+        case when x.cjs>1 then '100.00%' else x.cjsum end as collects from
+        (
+        select DISTINCT b.numbers,b.name,a.leader,a.line_length,a.status,a.contract_id,
+        p.person_sum0,p.employee,s1.car,s1.hand,car_code,
+        a.start_date,a.end_date,DATEDIFF(a.end_date, a.start_date)AS days,
+        jd.cj_length,jd.empty_sum,jd.void_sum,jd.loose_sum,
+        concat(round(jd.check_sum,2),'%') as checks,
+        concat(Round((jd.cj_length/a.line_length)*100,2),'%') as cjsum,
+        (jd.cj_length/a.line_length) as cjs
+        from project a
+        left join contract b on a.contract_id=b.id
+        left join
+        (select  GROUP_CONCAT(distinct d.employee) as employee,COUNT(*) as person_sum0 , c.numbers,a.contract_id,
+        a.states from person a left join contract c on a.contract_id = c.id
+        left join employee d on a.employee_id=d.id
+        GROUP BY c.numbers) p on a.contract_id=p.contract_id
+        left join
+        (select t1.numbers,t1.contract_id,
+        sum(case t1.type when '车载' then t1.counts else 0 end) car,
+        sum(case t1.type when '手推' then t1.counts else 0 end) hand,
+        sum(case t1.type when '隧道检测' then t1.counts else 0 end) sdjc,
+        sum(case t1.type when '天线' then t1.counts else 0 end) tx
+        from
+        (SELECT b.numbers,b.name,a.counts,  e.type,a.contract_id
+        FROM device a
+        left join contract b on a.contract_id=b.id
+        left join equipment e on a.equipment_id=e.id) as  t1
+        GROUP BY t1.numbers) s1
+        on a.contract_id=s1.contract_id
+        left join
+        (SELECT c1.contract_id,c1.numbers, GROUP_CONCAT(c1.number) as car_code ,COUNT(*) from
+        ( select b.numbers,a.contract_id,c.number
+        from bus a left join contract b
+        on a.contract_id=b.id left join car c on a.car_id=c.id
+        ) c1 GROUP BY c1.numbers) cars
+        on a.contract_id=cars.contract_id
+        left join
+        ( select da.contract_id,sum(da.car_length+da.hand_length)cj_length,max(da.check_num+0) as check_sum,
+        sum(da.empty_num) as empty_sum,sum(da.void_num) as void_sum,sum(da.loose_num) as loose_sum
+        from  daily da
+        GROUP BY da.contract_id) jd
+        on a.contract_id=jd.contract_id
+        ) x left join manager m  on x.contract_id=m.contract_id
+
+
+
+        <where>
+            <if test="userId!=null and userId!=''">
+                and m.user_id = #{userId}
+            </if>
+
+            <if test="status!=null and status!=''">
+                and x.status like '%${status}%'
+            </if>
+        </where>
+        ORDER BY x.end_date DESC
+    </select>
+
+    <select id="queryResumesById" resultType="com.yx.model.Resumes" parameterType="Integer">
+        select * from resumes where id = #{resumesId}
+    </select>
+</mapper>

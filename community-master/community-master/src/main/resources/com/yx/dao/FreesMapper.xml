@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.FreesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Frees">
+        <id column="id" property="id" />
+        <result column="free_man" property="freeMan" />
+        <result column="person_num" property="personNum" />
+        <result column="equipment_car" property="equipmentCar" />
+        <result column="car_num" property="carNum" />
+        <result column="equipment_hand" property="equipmentHand" />
+        <result column="hand_num" property="handNum" />
+        <result column="car_code" property="carCode" />
+        <result column="car_free" property="carFree" />
+        <result column="type" property="type" />
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, free_man, person_num,equipment_car,car_num,equipment_hand,hand_num,car_code,car_free,type
+    </sql>
+    <!--查询公司闲置情况（人员、车辆、设备）-->
+    <select id="queryFreesAll" parameterType="string" resultType="com.yx.model.Frees">
+
+        select ry.*,cz.*,st.*,xzc.*
+        from
+        (
+        select  GROUP_CONCAT(xzry.employee) as free_man,COUNT(*) as person_num,ROW_COUNT() + 2 as rygl
+        FROM
+        (
+        select pp1.id,pp1.employee,xj.now,xj.start_date,xj.end_date
+        from
+        (
+        select  em.id,em.employee,em.position,gz.employee_id
+        from employee em
+        left join
+        (select pe.employee_id from
+        (select  p.* from project p where p.status='进行中') p
+        left join person pe on p.contract_id=pe.contract_id
+        left join employee e on pe.employee_id=e.id
+        ) gz
+        on em.id=gz.employee_id
+        where gz.employee_id is null
+        and em.department='雷达探测部'
+        and em.position  in ('项目经理','项目副经理','雷达工程师','项目司机')
+        ) pp1
+        left join
+        (select h.*,date_format(now(),'%Y-%m-%d')  as now
+        from holidays h
+        where date_format(now(),'%Y-%m-%d')>=h.start_date and h.end_date >= date_format(now(),'%Y-%m-%d')
+        ) xj on pp1.id =xj.employee_id
+        where xj.now is null
+        )  as xzry
+        ) as ry
+
+        left join
+        (
+        select xzsb.type, GROUP_CONCAT(names,code)  as equipment_car ,COUNT(*) as car_num,ROW_COUNT() + 2 as czgl
+        from
+        (
+        select eq.*,sb.equipment_id
+        FROM equipment eq
+        left join
+        (
+        select p.contract_id,de.equipment_id from
+        (select  p.* from project p where p.status='进行中') p
+        left join device de on p.contract_id=de.contract_id
+        left join equipment e on de.equipment_id=e.id
+        ) sb
+        on eq.id=sb.equipment_id
+        where sb.equipment_id is null and eq.type='车载'
+        ) as xzsb
+        ) as cz
+        on ry.rygl=cz.czgl
+
+        left join
+        (
+        select xzst.type as st_type, GROUP_CONCAT(names,code)  as equipment_hand ,COUNT(*) as hand_num,ROW_COUNT() + 2 as stgl
+        from
+        (
+        select eq.*,sb.equipment_id
+        FROM equipment eq
+        left join
+        (
+        select p.contract_id,de.equipment_id from
+        (select  p.* from project p where p.status='进行中') p
+        left join device de on p.contract_id=de.contract_id
+        left join equipment e on de.equipment_id=e.id
+        ) sb
+        on eq.id=sb.equipment_id
+        where sb.equipment_id is null and eq.type='手推'
+        ) as  xzst
+        ) as st
+        on ry.rygl=st.stgl
+
+        left join
+        (
+        select GROUP_CONCAT(xzcar.number) as car_code,COUNT(*) as car_free,ROW_COUNT() + 2 as cargl
+        FROM
+        (
+        select c.*,car.car_id
+        FROM car c
+        left join
+        (
+        select p.contract_id,bu.car_id from
+        (select  p.* from project p where p.status='进行中') p
+        left join bus bu on p.contract_id=bu.contract_id
+        left join car ca on bu.car_id=ca.id
+        ) car
+        on c.id=car.car_id
+        where car.car_id is null and c.name  not in ('无')
+        ) as  xzcar
+        ) xzc
+        on ry.rygl=xzc.cargl
+
+        <where>
+            <if test="type!=null and type!=''">
+                and xzsb.type like '%${type}%'
+            </if>
+        </where>
+
+    </select>
+
+    <select id="queryFreesById" resultType="com.yx.model.Frees" parameterType="Integer">
+        select * from frees where id = #{freesId}
+    </select>
+
+</mapper>

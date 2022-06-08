@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.AttendanceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Attendance">
+        <id column="id" property="id"/>
+        <result column="numbers" property="numbers"/>
+        <result column="name" property="name"/>
+        <result column="sale" property="sale"/>
+        <result column="customer" property="customer"/>
+        <result column="type" property="type"/>
+        <result column="money" property="money"/>
+        <result column="year" property="year"/>
+        <result column="month" property="month"/>
+        <result column="employee" property="employee"/>
+        <result column="attend" property="attend"/>
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, numbers,name,sale,customer,type,money,year,month,employee,attend
+        </sql>
+
+    <!--查询项目用工-->
+    <select id="queryAttendanceAll" parameterType="string" resultType="com.yx.model.Attendance">
+        SELECT b.numbers, b.name, b.type, b.sale, b.customer, b.money, substr(a.date, 1, 4) year,
+        substr(a.date, 6, 2) month, c.employee, count(a.date) AS attend0,
+        sum(CASE a.states WHEN '出差' THEN counts ELSE 0 END) AS 'attend'
+         FROM person a
+         LEFT JOIN contract b ON a.contract_id = b.id LEFT JOIN employee c ON a.employee_id = c.id
+         inner join  manager m on a.contract_id =m.contract_id
+        <where>
+            a.states='出差'
+            <if test="userId!=null and userId!=''">
+                and m.user_id = #{userId}
+            </if>
+            <if test="numbers!=null and numbers!=''">
+                and b.numbers like '%${numbers}%'
+            </if>
+        </where>
+        GROUP BY b.numbers,month,c.employee
+        ORDER BY year desc,month desc
+
+    </select>
+
+    <select id="queryAttendanceById" resultType="com.yx.model.Attendance" parameterType="Integer">
+        select * from attendance where id = #{attendanceId}
+    </select>
+</mapper>

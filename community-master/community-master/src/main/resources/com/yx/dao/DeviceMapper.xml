@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.DeviceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Device">
+        <id column="id" property="id" />
+        <result column="contract_id" property="contractId" />
+        <result column="date" property="date" />
+        <result column="equipment_id" property="equipmentId" />
+        <result column="remarks" property="remarks" />
+        <result column="counts" property="counts" />
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, contract_id,date, equipment_id, remarks,counts
+    </sql>
+    <!--查询项目采集设备信息-->
+    <select id="queryDeviceAll" parameterType="string" resultType="com.yx.model.Device">
+        select a.id,a.contract_id,a.equipment_id,a.date,a.remarks,b.numbers,b.name,c.code,c.names,c.type,a.counts from device a left join contract b
+        on a.contract_id=b.id left join equipment c on a.equipment_id=c.id left join manager e on a.contract_id=e.contract_id
+
+        <where>
+            <if test="userId!=null and userId!=''">
+                and e.user_id = #{userId}
+            </if>
+
+            <if test="numbers!=null and numbers!=''">
+                and b.numbers like '%${numbers}%'
+            </if>
+        </where>
+        order by a.date desc
+    </select>
+
+    <select id="queryDeviceById" resultType="com.yx.model.Device" parameterType="Integer">
+        select * from device where id = #{deviceId}
+    </select>
+
+</mapper>
+
+
+
+
+

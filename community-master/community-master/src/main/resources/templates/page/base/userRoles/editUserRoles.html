@@ -1,0 +1,101 @@
+<div class="layuimini-main">
+    <div class="layui-form layuimini-form " lay-filter="updateSubmit">
+
+        <input type="text" name="id"  style="display:none">
+
+        <input type="text" name="userId"  id="userId" style="display:none">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">用户名</label>
+            <div class="layui-input-inline">
+                <input type="text" lay-verify="required" placeholder="请输入用户名" lay-reqtext="用户名不能为空" autocomplete="off" class="layui-input" id="r_user">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">角色类型</label>
+            <div class="layui-input-block">
+                <select name="rolesId" lay-verify="required">
+                    <option value="">角色名称</option>
+                    <option value="1">管理员</option>
+                    <option value="3">销售部</option>
+                    <option value="5">财务部</option>
+                    <option value="4">项目负责人</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">用户角色</label>
+            <div class="layui-input-block">
+                <select name="rolesName" lay-verify="required">
+                    <option value="">角色类型</option>
+                    <option value="管理员">管理员</option>
+                    <option value="销售部">销售部</option>
+                    <option value="财务部">财务部</option>
+                    <option value="项目负责人">项目负责人</option>
+                </select>
+            </div>
+        </div>
+
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="updateSubmit">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table', 'tableSelect'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            tableSelect = layui.tableSelect;
+        $ = layui.$;
+
+
+        //form.render();
+
+
+        tableSelect.render({
+            elem: '#r_user',
+            checkedKey: 'id',
+            table: {
+                url: 'userinfo/queryUserInfoAll',
+                cols: [[
+                    { type: 'radio' },
+                    //{ field: 'id', title: 'ID' },
+                    { field: 'username', title: '人员' },
+                    { field: 'realName', title: '岗位' }
+                ]]
+            },
+            done: function (elem, data) {
+
+                $("#userId").val(data.data[0].id);
+                $("#r_user").val(data.data[0].username);
+                $("#realName").val(data.data[0].realName);
+            }
+        })
+
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(updateSubmit)', function (data) {
+            //获取表单中的数据信息
+            var datas=data.field;
+            //向后台发送请求 添加
+            addOrUpdateSubmit($,"userRoles/update",datas);
+
+            return false;
+        });
+
+    });
+</script>

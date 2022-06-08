@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.DailyMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Daily">
+        <id column="id" property="id"/>
+        <result column="contract_id" property="contractId"/>
+        <result column="date" property="date"/>
+        <result column="car_length" property="carLength"/>
+        <result column="hand_length" property="handLength"/>
+        <result column="check_num" property="checkNum"/>
+        <result column="check_sum" property="checkSum"/>
+        <result column="drill_num" property="drillNum"/>
+        <result column="empty_num" property="emptyNum"/>
+        <result column="void_num" property="voidNum"/>
+        <result column="loose_num" property="looseNum"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="remarks" property="remarks"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+            id, contract_id,date,car_length,hand_length,check_num,drill_num,empty_num,void_num,loose_num,start_time,end_time,remarks
+        </sql>
+
+    <!--查询项目进度信息-->
+    <select id="queryDailyAll" parameterType="string" resultType="com.yx.model.Daily">
+        select DISTINCT a.contract_id, a.id,a.date,a.car_length,a.hand_length,CONCAT(round(a.check_num,2),'%')as check_num,a.drill_num,a.empty_num,a.check_sum,
+        a.void_num,a.loose_num,a.start_time,a.end_time,a.remarks,b.numbers,b.name
+        from daily a inner join contract b on a.contract_id=b.id
+        inner join manager m on a.contract_id=m.contract_id
+
+        <where>
+            <if test="userId!=null and userId!=''">
+                and m.user_id = #{userId}
+            </if>
+
+            <if test="numbers!=null and numbers!=''">
+                and b.numbers like '%${numbers}%'
+            </if>
+        </where>
+        ORDER BY a.date DESC
+    </select>
+
+    <select id="queryDailyById" resultType="com.yx.model.Daily" parameterType="Integer">
+        select * from daily where id = #{dailyId}
+    </select>
+</mapper>

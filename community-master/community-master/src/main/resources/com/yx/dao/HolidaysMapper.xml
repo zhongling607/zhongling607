@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yx.dao.HolidaysMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yx.model.Holidays">
+        <id column="id" property="id" />
+        <result column="employee_id" property="employeeId" />
+        <result column="date" property="date" />
+        <result column="start_date" property="startDate" />
+        <result column="end_date" property="endDate" />
+        <result column="dates" property="dates" />
+        <result column="remarks" property="remarks" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, employee_id, date,start_date,end_date,dates,remarks
+    </sql>
+    <!--查询财务管理项目开票信息-->
+    <select id="queryHolidaysAll" parameterType="string" resultType="com.yx.model.Holidays">
+        select h.* ,e.employee,e.position
+        FROM holidays h
+        LEFT join employee e on  h.employee_id=e.id
+
+        <where>
+            <if test="employee!=null and employee!=''">
+                and e.employee like '%${employee}%'
+            </if>
+        </where>
+
+    </select>
+
+    <select id="queryHolidaysById" resultType="com.yx.model.Holidays" parameterType="Integer">
+        select * from holidays where id = #{holidaysId}
+    </select>
+
+</mapper>

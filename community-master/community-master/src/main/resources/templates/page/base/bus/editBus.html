@@ -1,0 +1,109 @@
+<div class="layuimini-main">
+    <div class="layui-form layuimini-form " lay-filter="updateSubmit">
+
+        <input type="text" name="contractId"  id="contractId" style="display:none">
+        <input type="text" name="id"  style="display:none">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">项目编号</label>
+            <div class="layui-input-inline">
+                <input type="text" lay-verify="required" placeholder="请输入项目编号" lay-reqtext="项目编号不能为空" placeholder="请输入项目编号" value="" autocomplete="off" class="layui-input" id="b_numbers">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">日期</label>
+            <div class="layui-input-block">
+                <input type="date" name="date" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+        <input type="text" name="carId"  id="carId" style="display:none">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">车牌号</label>
+            <div class="layui-input-inline">
+                <input type="text"  placeholder="请输入车牌号" lay-reqtext="车牌号不能为空" placeholder="请输入车牌号" value="" autocomplete="off" class="layui-input" id="number">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">备注</label>
+            <div class="layui-input-block">
+                <input type="text" name="remarks"  class="layui-input">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="updateSubmit">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table', 'tableSelect'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            tableSelect = layui.tableSelect;
+        $ = layui.$;
+
+
+        //form.render();
+        tableSelect.render({
+            elem: '#b_numbers',
+            checkedKey: 'id',
+            table: {
+                url: 'contract/queryContractAll',
+                cols: [[
+                    { type: 'radio' },
+                    //{ field: 'id', title: 'ID' },
+                    { field: 'numbers', title: '项目编号' },
+                    { field: 'name', title: '项目名称' }
+                ]]
+            },
+            done: function (elem, data) {
+                debugger
+                $("#contractId").val(data.data[0].id);
+                $("#b_numbers").val(data.data[0].numbers);
+            }
+        })
+
+        //form.render();
+        tableSelect.render({
+            elem: '#number',
+            checkedKey: 'id',
+            table: {
+                url: 'car/queryCarAll',
+                cols: [[
+                    { type: 'radio' },
+                    //{ field: 'id', title: 'ID' },
+                    { field: 'number', title: '车辆编号' },
+                    { field: 'carname', title: '车辆名称' }
+                ]]
+            },
+            done: function (elem, data) {
+                debugger
+                $("#carId").val(data.data[0].id);
+                $("#number").val(data.data[0].number);
+            }
+        })
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(updateSubmit)', function (data) {
+            //获取表单中的数据信息
+            var datas=data.field;
+            //向后台发送请求 添加
+            addOrUpdateSubmit($,"bus/update",datas);
+
+            return false;
+        });
+
+    });
+</script>
